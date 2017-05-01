@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Text;
 
 namespace XUnityEngine.Joystick {
 
@@ -63,15 +64,19 @@ namespace XUnityEngine.Joystick {
         private string          readonlyName;
         private JoystickConfig  readonlyConfig;
         private bool            readonlyIsActive;
-        private string          axisRoot;
+        private string[]        axes;
 
         public const float DEADZONE = 1.0f / 8.0f;
 
         public Joystick (int index, string name) {
+            string axisBase = "Joystick" + index + "Axis";
             readonlyIndex = index;
             readonlyName = name;
             readonlyIsActive = true;
-            axisRoot = "Joystick" + index + "Axis";
+            axes = new string[MAX_AXES];
+            for (int i = 0; i < MAX_AXES; i++) {
+                axes[i] = axisBase + (i + 1);
+            }
         }
 
         protected void LoadConfig (JoystickConfig config) {
@@ -83,7 +88,7 @@ namespace XUnityEngine.Joystick {
         }
 
         private string GlobalizeAxis (int axisID) {
-            return axisRoot + (axisID + 1);
+            return axes[axisID];
         }
 
         private KeyCode MapButton (JoystickButton button) {
