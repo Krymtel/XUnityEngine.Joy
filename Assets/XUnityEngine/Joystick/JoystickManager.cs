@@ -9,18 +9,27 @@ namespace XUnityEngine.Joystick {
      *
      * - WebGL: Figure out some way to recognize that a joystick is no longer connected so that we can stop reading in input (this is particular to XBOX it seems.)
      *          I think WebGL must use some other way to represent a DC'd controller besides an empty string.
+     *          
+     * - General: Handle the case that an amount of joysticks greater than MAX_JOYSTICKS is connected.
+     * 
      */
 
     public class JoystickManager : MonoBehaviour {
 
         public const int MAX_JOYSTICKS = 10;
 
+        public event Action<Joystick> OnRegister;
         public event Action<Joystick> OnConnect;
-        public event Action<Joystick> OnActivate;
-        public event Action<Joystick> OnDeactivate;
+        public event Action<Joystick> OnDisconnect;
+
+        public int JoystickCount {
+            get {
+                return readonlyJoyCount;
+            }
+        }
 
         private Joystick[] joysticks;
-        private int joystickCount = 0;
+        private int readonlyJoyCount = 0;
 
         private string[] joyNames;
         private string[] prevJoyNames;
@@ -28,7 +37,7 @@ namespace XUnityEngine.Joystick {
         private int joyNameCount = 0;
         private int prevJoyNameCount = 0;
 
-        private void Awake () {
+        private void Start () {
             joyNames = new string[MAX_JOYSTICKS];
             prevJoyNames = new string[MAX_JOYSTICKS];
             joysticks = new Joystick[MAX_JOYSTICKS];
@@ -54,9 +63,9 @@ namespace XUnityEngine.Joystick {
                 if (j == null)
                     continue;
                 if (joyNames[i].Length == 0)
-                    DisableJoystick (i + 1);
+                    DisconnectJoystick (i + 1);
                 else
-                    EnableJoystick  (i + 1);
+                    ConnectJoystick  (i + 1);
             }
             joyNames.CopyTo (prevJoyNames, 0);
             prevJoyNameCount = joyNameCount;
@@ -76,20 +85,14 @@ namespace XUnityEngine.Joystick {
             string name = joystickNames[joystickIndex - 1];
             // Check if the joystick is inactive...
             if (name.Length == 0) {
-                print ("Inactive joystick detected at index " + joystickIndex + ". Ignoring.");
+                print ("Disconnected joystick detected at index " + joystickIndex + ". Ignoring.");
                 yield break;
             }
-            Joystick joystick = null;
-            string joyID = "Joystick" + joystickIndex;
-            print ("Attempting to bind joystick " + joystickIndex + ": " + name);
-            Func<bool> IsPollingForInput = delegate () {
-                bool isPolling = true;
-                int i = 0;
-                while ((isPolling = Input.GetAxisRaw (joyID + "Axis" + (++i)) == 0.0f) && i < Joystick.MAX_AXES);
-                return isPolling;
-            };
-            while (IsPollingForInput ())
+            Joystick dummyJoystick = new Joystick (joystickIndex, name);
+            print ("Attempting to connect joystick " + joystickIndex + ": " + name);
+            while (dummyJoystick.IsPolling)
                 yield return null;
+            Joystick joystick = null;
             switch (name) {
                 // Assume that the default joystick is configured to work like an XBOX 360 controller.
                 default:
@@ -103,34 +106,34 @@ namespace XUnityEngine.Joystick {
                 // Would be nice if Unity gave me a better way to read into a joystick's info...
                 case "Wireless Controller":                                         // Standalone (Win)
                 case "054c-05c4-Wireless Controller":                               // WebGL
-                    bool isWired = Input.GetAxisRaw (joyID + "Axis2") != 0.0f; // Jank check to see if we're working with bluetooth (since, in that case, Axis2 should always return 0...)
+                    bool isWired = dummyJoystick.GetAxisRaw (2) != 0.0f; // Jank check to see if we're working with bluetooth (since, in that case, Axis2 should always return 0...)
                     joystick = new PS4Joystick (joystickIndex, name, isWired);
                     break;
             }
-            print ("Successfully bound joystick " + joystickIndex + " of type " + joystick + " with config " + joystick.Config + '.');
-            joysticks[joystickCount++] = joystick;
+            print ("Successfully connected joystick " + joystickIndex + " of type " + joystick + " with config " + joystick.Config + '.');
+            joysticks[readonlyJoyCount++] = joystick;
+            if (OnRegister != null)
+                OnRegister (joystick);
             if (OnConnect != null)
                 OnConnect (joystick);
-            if (OnActivate != null)
-                OnActivate (joystick);
             yield break;
         }
 
         public Joystick GetJoystick (int joystick) {
-            if (joystick < 1 || joystick > joystickCount)
+            if (joystick < 1 || joystick > readonlyJoyCount)
                 return null;
             int i = 0;
             Joystick potential = null;
-            while (joystick > 0 && i < joystickCount) {
+            while (joystick > 0 && i < readonlyJoyCount) {
                 potential = joysticks[i++];
-                if (potential.IsActive)
+                if (potential.IsConnected)
                     joystick--;
             }
             return joystick == 0 ? potential : null;
         }
 
         public Joystick GetJoystickByID (int joystickID) {
-            for (int i = 0; i < joystickCount; i++) {
+            for (int i = 0; i < readonlyJoyCount; i++) {
                 Joystick potentialJoystick = joysticks[i];
                 if (potentialJoystick.Index == joystickID)
                     return potentialJoystick;
@@ -138,28 +141,24 @@ namespace XUnityEngine.Joystick {
             return null;
         }
 
-        private void DisableJoystick (int joystickIndex) {
+        private void DisconnectJoystick (int joystickIndex) {
             Joystick joy = GetJoystickByID (joystickIndex);
-            if (joy == null || !joy.IsActive)
+            if (joy == null || !joy.IsConnected)
                 return;
             Debug.LogWarning ("Joystick " + joystickIndex + " has been disconnected!");
             joy.Deactivate ();
-            if (OnDeactivate != null)
-                OnDeactivate (joy);
+            if (OnDisconnect != null)
+                OnDisconnect (joy);
         }
 
-        private void EnableJoystick (int joystickIndex) {
+        private void ConnectJoystick (int joystickIndex) {
             Joystick joy = GetJoystickByID (joystickIndex);
-            if (joy == null || joy.IsActive)
+            if (joy == null || joy.IsConnected)
                 return;
-            Debug.LogWarning ("Joystick " + joystickIndex + " has been reconnected!");
+            Debug.LogWarning ("Joystick " + joystickIndex + " has been connected!");
             joy.Activate ();
-            if (OnActivate != null)
-                OnActivate (joy);
-        }
-
-        public int GetJoystickCount () {
-            return joystickCount;
+            if (OnConnect != null)
+                OnConnect (joy);
         }
 
     }
