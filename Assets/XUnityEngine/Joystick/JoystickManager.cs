@@ -19,35 +19,37 @@ namespace XUnityEngine.Joystick {
         public event Action<Joystick> OnActivate;
         public event Action<Joystick> OnDeactivate;
 
-        private List<Joystick> joysticks;
+        private Joystick[] joysticks;
+        private int joystickCount = 0;
+
         private string[] joyNames;
         private string[] prevJoyNames;
 
-        private int joyCount = 0;
-        private int prevJoyCount = 0;
+        private int joyNameCount = 0;
+        private int prevJoyNameCount = 0;
 
         private void Awake () {
             joyNames = new string[MAX_JOYSTICKS];
             prevJoyNames = new string[MAX_JOYSTICKS];
-            joysticks = new List<Joystick> (MAX_JOYSTICKS);
+            joysticks = new Joystick[MAX_JOYSTICKS];
             PollForJoysticks ();
-            print ("Detected " + joyCount + " joystick" + (joyCount == 1 ? "." : "s."));
-            for (int i = 0; i < Mathf.Min (joyCount, MAX_JOYSTICKS); i++)
+            print ("Detected " + joyNameCount + " joystick" + (joyNameCount == 1 ? "." : "s."));
+            for (int i = 0; i < Mathf.Min (joyNameCount, MAX_JOYSTICKS); i++)
                 StartCoroutine (AddJoystick (joyNames, i + 1));
             joyNames.CopyTo (prevJoyNames, 0);
-            prevJoyCount = joyCount;
+            prevJoyNameCount = joyNameCount;
         }
 
         private void Update () {
             PollForJoysticks ();
-            for (int i = 0; i < Mathf.Min (prevJoyCount, joyCount); i++) {
+            for (int i = 0; i < Mathf.Min (prevJoyNameCount, joyNameCount); i++) {
                 if (prevJoyNames[i].Length == 0 && joyNames[i].Length > 0)
                     StartCoroutine (AddJoystick (joyNames, i + 1));
             }
-            for (int i = prevJoyCount; i < joyCount; i++) {
+            for (int i = prevJoyNameCount; i < joyNameCount; i++) {
                 StartCoroutine (AddJoystick (joyNames, i + 1));
             }
-            for (int i = 0; i < joyCount; i++) {
+            for (int i = 0; i < joyNameCount; i++) {
                 Joystick j = GetJoystickByID (i + 1);
                 if (j == null)
                     continue;
@@ -57,13 +59,13 @@ namespace XUnityEngine.Joystick {
                     EnableJoystick  (i + 1);
             }
             joyNames.CopyTo (prevJoyNames, 0);
-            prevJoyCount = joyCount;
+            prevJoyNameCount = joyNameCount;
         }
 
         private void PollForJoysticks () {
             string[] newJoyNames = Input.GetJoystickNames ();
             newJoyNames.CopyTo (joyNames, 0);
-            joyCount = newJoyNames.Length;
+            joyNameCount = newJoyNames.Length;
         }
 
         private IEnumerator AddJoystick (string[] joystickNames, int joystickIndex) {
@@ -106,7 +108,7 @@ namespace XUnityEngine.Joystick {
                     break;
             }
             print ("Successfully bound joystick " + joystickIndex + " of type " + joystick + " with config " + joystick.Config + '.');
-            joysticks.Add (joystick);
+            joysticks[joystickCount++] = joystick;
             if (OnConnect != null)
                 OnConnect (joystick);
             if (OnActivate != null)
@@ -115,11 +117,11 @@ namespace XUnityEngine.Joystick {
         }
 
         public Joystick GetJoystick (int joystick) {
-            if (joystick < 1 || joystick > joysticks.Count)
+            if (joystick < 1 || joystick > joystickCount)
                 return null;
             int i = 0;
             Joystick potential = null;
-            while (joystick > 0 && i < joysticks.Count) {
+            while (joystick > 0 && i < joystickCount) {
                 potential = joysticks[i++];
                 if (potential.IsActive)
                     joystick--;
@@ -128,7 +130,7 @@ namespace XUnityEngine.Joystick {
         }
 
         public Joystick GetJoystickByID (int joystickID) {
-            for (int i = 0; i < joysticks.Count; i++) {
+            for (int i = 0; i < joystickCount; i++) {
                 Joystick potentialJoystick = joysticks[i];
                 if (potentialJoystick.Index == joystickID)
                     return potentialJoystick;
@@ -157,7 +159,7 @@ namespace XUnityEngine.Joystick {
         }
 
         public int GetJoystickCount () {
-            return joysticks.Count;
+            return joystickCount;
         }
 
     }
