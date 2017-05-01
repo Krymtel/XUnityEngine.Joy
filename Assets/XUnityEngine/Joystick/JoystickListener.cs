@@ -28,7 +28,7 @@ namespace XUnityEngine.Joystick {
             if (!GetManager ()) return;
             if (!GetPlayerID ()) return;
             // Try to bind to the nth most active joystick, where n = playerID. The argument "joy" is not used at the moment.
-            joyManager.OnActivate += delegate (Joystick joy) {
+            joyManager.OnConnect += delegate (Joystick joy) {
                 Joystick potentialJoystick = joyManager.GetJoystick (playerID);
                 if (potentialJoystick != null && !IsConnected) {
                     joystick = potentialJoystick;
@@ -36,7 +36,7 @@ namespace XUnityEngine.Joystick {
                 }
             };
             // If the joystick being deactivated is equal to the joystick we've connected to, disconnect it.
-            joyManager.OnDeactivate += delegate (Joystick joy) {
+            joyManager.OnDisconnect += delegate (Joystick joy) {
                 if (joystick == joy) {
                     joystick = null;
                     OnDisconnect.Invoke ();

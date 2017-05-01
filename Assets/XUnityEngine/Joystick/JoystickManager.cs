@@ -18,9 +18,9 @@ namespace XUnityEngine.Joystick {
 
         public const int MAX_JOYSTICKS = 10;
 
+        public event Action<Joystick> OnRegister;
         public event Action<Joystick> OnConnect;
-        public event Action<Joystick> OnActivate;
-        public event Action<Joystick> OnDeactivate;
+        public event Action<Joystick> OnDisconnect;
 
         public int JoystickCount {
             get {
@@ -118,10 +118,10 @@ namespace XUnityEngine.Joystick {
             }
             print ("Successfully bound joystick " + joystickIndex + " of type " + joystick + " with config " + joystick.Config + '.');
             joysticks[readonlyJoyCount++] = joystick;
+            if (OnRegister != null)
+                OnRegister (joystick);
             if (OnConnect != null)
                 OnConnect (joystick);
-            if (OnActivate != null)
-                OnActivate (joystick);
             yield break;
         }
 
@@ -153,8 +153,8 @@ namespace XUnityEngine.Joystick {
                 return;
             Debug.LogWarning ("Joystick " + joystickIndex + " has been disconnected!");
             joy.Deactivate ();
-            if (OnDeactivate != null)
-                OnDeactivate (joy);
+            if (OnDisconnect != null)
+                OnDisconnect (joy);
         }
 
         private void EnableJoystick (int joystickIndex) {
@@ -163,8 +163,8 @@ namespace XUnityEngine.Joystick {
                 return;
             Debug.LogWarning ("Joystick " + joystickIndex + " has been reconnected!");
             joy.Activate ();
-            if (OnActivate != null)
-                OnActivate (joy);
+            if (OnConnect != null)
+                OnConnect (joy);
         }
 
     }
