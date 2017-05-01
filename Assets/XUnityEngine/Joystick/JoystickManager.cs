@@ -22,8 +22,14 @@ namespace XUnityEngine.Joystick {
         public event Action<Joystick> OnActivate;
         public event Action<Joystick> OnDeactivate;
 
+        public int JoystickCount {
+            get {
+                return readonlyJoyCount;
+            }
+        }
+
         private Joystick[] joysticks;
-        private int joystickCount = 0;
+        private int readonlyJoyCount = 0;
 
         private string[] joyNames;
         private string[] prevJoyNames;
@@ -111,7 +117,7 @@ namespace XUnityEngine.Joystick {
                     break;
             }
             print ("Successfully bound joystick " + joystickIndex + " of type " + joystick + " with config " + joystick.Config + '.');
-            joysticks[joystickCount++] = joystick;
+            joysticks[readonlyJoyCount++] = joystick;
             if (OnConnect != null)
                 OnConnect (joystick);
             if (OnActivate != null)
@@ -120,11 +126,11 @@ namespace XUnityEngine.Joystick {
         }
 
         public Joystick GetJoystick (int joystick) {
-            if (joystick < 1 || joystick > joystickCount)
+            if (joystick < 1 || joystick > readonlyJoyCount)
                 return null;
             int i = 0;
             Joystick potential = null;
-            while (joystick > 0 && i < joystickCount) {
+            while (joystick > 0 && i < readonlyJoyCount) {
                 potential = joysticks[i++];
                 if (potential.IsActive)
                     joystick--;
@@ -133,7 +139,7 @@ namespace XUnityEngine.Joystick {
         }
 
         public Joystick GetJoystickByID (int joystickID) {
-            for (int i = 0; i < joystickCount; i++) {
+            for (int i = 0; i < readonlyJoyCount; i++) {
                 Joystick potentialJoystick = joysticks[i];
                 if (potentialJoystick.Index == joystickID)
                     return potentialJoystick;
@@ -159,10 +165,6 @@ namespace XUnityEngine.Joystick {
             joy.Activate ();
             if (OnActivate != null)
                 OnActivate (joy);
-        }
-
-        public int GetJoystickCount () {
-            return joystickCount;
         }
 
     }
