@@ -129,7 +129,14 @@ namespace XUnityEngine.Joystick {
         }
 
         public Joystick GetJoystickByID (int joystickID) {
-            return joysticks.Find (x => x.Index == joystickID);
+            for (int i = 0; i < joysticks.Count; i++) {
+                Joystick potentialJoystick = joysticks[i];
+                if (potentialJoystick.Index == joystickID)
+                    return potentialJoystick;
+            }
+            return null;
+            // Cute one-liner, but not good to call every frame.
+            // return joysticks.Find (x => x.Index == joystickID);
         }
 
         private void DisableJoystick (int joystickIndex) {
