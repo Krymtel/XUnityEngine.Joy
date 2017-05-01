@@ -7,7 +7,6 @@ namespace XUnityEngine.Joystick {
 
     /* TODO
      *
-     * - [SOLVED] WebGL: XBOX 360 controllers must have their LT/RT triggers read some other way. Maybe they're in some axes we're not looking at? (yes)
      * - WebGL: Figure out some way to recognize that a joystick is no longer connected so that we can stop reading in input (this is particular to XBOX it seems.)
      *          I think WebGL must use some other way to represent a DC'd controller besides an empty string.
      */
@@ -92,15 +91,15 @@ namespace XUnityEngine.Joystick {
             switch (name) {
                 // Assume that the default joystick is configured to work like an XBOX 360 controller.
                 default:
-                    // case "Controller (Xbox One For Windows)":                    // Standalone
-                    // case "Controller (XBOX 360 For Windows)":                    // Standalone
-                    // case "Controller (Xbox 360 Wireless Receiver for Windows)    // Standalone (Win only?)
+                    // case "Controller (Xbox One For Windows)":                    // Standalone (Win)
+                    // case "Controller (XBOX 360 For Windows)":                    // Standalone (Win)
+                    // case "Controller (Xbox 360 Wireless Receiver for Windows)    // Standalone (Win)
                     // case "xinput":                                               // WebGL
                     joystick = new XBOX360Joystick (joystickIndex, name);
                     break;
                 // PS4 controllers, although I'm not sure if they hold these names exclusively.
                 // Would be nice if Unity gave me a better way to read into a joystick's info...
-                case "Wireless Controller":                                         // Standalone
+                case "Wireless Controller":                                         // Standalone (Win)
                 case "054c-05c4-Wireless Controller":                               // WebGL
                     bool isWired = Input.GetAxisRaw (joyID + "Axis2") != 0.0f; // Jank check to see if we're working with bluetooth (since, in that case, Axis2 should always return 0...)
                     joystick = new PS4Joystick (joystickIndex, name, isWired);
@@ -135,8 +134,6 @@ namespace XUnityEngine.Joystick {
                     return potentialJoystick;
             }
             return null;
-            // Cute one-liner, but not good to call every frame.
-            // return joysticks.Find (x => x.Index == joystickID);
         }
 
         private void DisableJoystick (int joystickIndex) {
