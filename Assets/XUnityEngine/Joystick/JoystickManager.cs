@@ -9,6 +9,9 @@ namespace XUnityEngine.Joystick {
      *
      * - WebGL: Figure out some way to recognize that a joystick is no longer connected so that we can stop reading in input (this is particular to XBOX it seems.)
      *          I think WebGL must use some other way to represent a DC'd controller besides an empty string.
+     *          
+     * - General: Handle the case that an amount of joysticks greater than MAX_JOYSTICKS is connected.
+     * 
      */
 
     public class JoystickManager : MonoBehaviour {
