@@ -25,8 +25,8 @@ namespace XUnityEngine.Joystick {
         private Joystick joystick;
 
         private void Awake () {
-            if (!GetManager ()) return;
-            if (!GetPlayerID ()) return;
+            if (!GetManager ())     return;
+            if (!GetPlayerID ())    return;
             // Try to bind to the nth most active joystick, where n = playerID. The argument "joy" is not used at the moment.
             joyManager.OnConnect += delegate (Joystick joy) {
                 Joystick potentialJoystick = joyManager.GetJoystick (playerID);
