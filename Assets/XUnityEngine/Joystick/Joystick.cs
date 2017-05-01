@@ -48,9 +48,23 @@ namespace XUnityEngine.Joystick {
             }
         }
 
-        public bool IsActive {
+        public bool IsConnected {
             get {
-                return readonlyIsActive;
+                return readonlyIsConnected;
+            }
+        }
+
+        public bool IsPolling {
+            get {
+                bool noInput = true;
+                int i;
+                i = 0;
+                while (noInput &= !GetButton (i++) && i < Joystick.MAX_BUTTONS) ;
+                if (noInput) {
+                    i = 1;
+                    while (noInput &= GetAxisRaw (i++) == 0.0f && i <= Joystick.MAX_AXES) ;
+                }
+                return noInput;
             }
         }
 
@@ -63,7 +77,7 @@ namespace XUnityEngine.Joystick {
         private int             readonlyIndex;
         private string          readonlyName;
         private JoystickConfig  readonlyConfig;
-        private bool            readonlyIsActive;
+        private bool            readonlyIsConnected;
         private string[]        axes;
 
         public const float DEADZONE = 1.0f / 8.0f;
@@ -72,7 +86,7 @@ namespace XUnityEngine.Joystick {
             string axisBase = "Joystick" + index + "Axis";
             readonlyIndex = index;
             readonlyName = name;
-            readonlyIsActive = true;
+            readonlyIsConnected = true;
             axes = new string[MAX_AXES];
             for (int i = 0; i < MAX_AXES; i++) {
                 axes[i] = axisBase + (i + 1);
@@ -84,7 +98,7 @@ namespace XUnityEngine.Joystick {
         }
 
         private KeyCode GlobalizeButton (int buttonID) {
-            return (KeyCode) ((int) KeyCode.Joystick1Button0 + (Index - 1) * MAX_BUTTONS + buttonID);
+            return (KeyCode) ((int) KeyCode.Joystick1Button0 + (Index - 1) * MAX_BUTTONS + Mathf.Clamp (buttonID, 0, MAX_BUTTONS - 1));
         }
 
         private string GlobalizeAxis (int axisID) {
@@ -121,17 +135,29 @@ namespace XUnityEngine.Joystick {
         }
 
         public bool GetButton       (JoystickButton button) {
-            return IsActive ? Input.GetKey      (MapButton (button)) : false;
+            return IsConnected ? Input.GetKey      (MapButton (button)) : false;
         }
 
         public bool GetButtonDown   (JoystickButton button) {
-            return IsActive ? Input.GetKeyDown  (MapButton (button)) : false;
+            return IsConnected ? Input.GetKeyDown  (MapButton (button)) : false;
         }
 
         // I could see it being an issue that a joystick's button will be held down, its joystick unplugged, and it never reporting a release during.
 
         public bool GetButtonUp     (JoystickButton button) {
-            return IsActive ? Input.GetKeyUp    (MapButton (button)) : false;
+            return IsConnected ? Input.GetKeyUp    (MapButton (button)) : false;
+        }
+
+        public bool GetButton      (int buttonID) {
+            return Input.GetKey     (GlobalizeButton (buttonID));
+        }
+
+        public bool GetButtonDown  (int buttonID) {
+            return Input.GetKeyDown (GlobalizeButton (buttonID));
+        }
+
+        public bool GetButtonUp    (int buttonID) {
+            return Input.GetKeyUp   (GlobalizeButton (buttonID));
         }
 
         public bool AnyButtonDown () {
@@ -142,7 +168,7 @@ namespace XUnityEngine.Joystick {
         }
 
         public float GetAxis (JoystickAxis axis) {
-            if (!IsActive)
+            if (!IsConnected)
                 return 0.0f;
             switch (axis) {
                 case JoystickAxis.LSX:
@@ -169,7 +195,7 @@ namespace XUnityEngine.Joystick {
         // Maybe deadzones for triggers should be established...
 
         public float GetAxisRaw (JoystickAxis axis) {
-            if (!IsActive)
+            if (!IsConnected)
                 return 0.0f;
             switch (axis) {
                 case JoystickAxis.LSX:
@@ -188,6 +214,10 @@ namespace XUnityEngine.Joystick {
             }
             Debug.LogError ("How did you manage to print this?");
             return 0;
+        }
+
+        public float GetAxisRaw (int axisID) {
+            return Input.GetAxisRaw (GlobalizeAxis (axisID - 1));
         }
 
         private float GetLSXRaw () {
@@ -243,11 +273,11 @@ namespace XUnityEngine.Joystick {
         }
 
         public void Activate () {
-            readonlyIsActive = true;
+            readonlyIsConnected = true;
         }
 
         public void Deactivate () {
-            readonlyIsActive = false;
+            readonlyIsConnected = false;
         }
 
         public override string ToString () {
