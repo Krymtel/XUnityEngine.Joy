@@ -47,7 +47,7 @@ namespace XUnityEngine.Joystick {
         private bool GetManager () {
             joyManager = GameObject.FindObjectOfType<JoystickManager> ();
             if (joyManager == null) {
-                Debug.LogError ("Couldn't find a JoystickManager in this scene to listen from. Have you forgotten to place one?");
+                Debug.LogError ("Couldn't find a JoystickManager in this scene to listen to. Have you forgotten to place one?");
                 return false;
             }
             return true;
@@ -55,7 +55,7 @@ namespace XUnityEngine.Joystick {
 
         private bool GetPlayerID () {
             if (playerID < 1 || playerID > JoystickManager.MAX_JOYSTICKS) {
-                Debug.LogError ("Invalid player ID of " + playerID + ". A valid player ID must be within the range of 1-10, inclusively, so that this JoystickListener can connect to a Joystick.");
+                Debug.LogError ("Invalid player ID of " + playerID + ". A valid player ID must be within the range of 1-10, inclusively, so that this JoystickListener can find a Joystick to listen to.");
                 return false;
             }
             return true;
