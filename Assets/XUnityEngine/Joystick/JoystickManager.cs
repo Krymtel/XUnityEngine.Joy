@@ -63,9 +63,9 @@ namespace XUnityEngine.Joystick {
                 if (j == null)
                     continue;
                 if (joyNames[i].Length == 0)
-                    DisableJoystick (i + 1);
+                    DisconnectJoystick (i + 1);
                 else
-                    EnableJoystick  (i + 1);
+                    ConnectJoystick  (i + 1);
             }
             joyNames.CopyTo (prevJoyNames, 0);
             prevJoyNameCount = joyNameCount;
@@ -85,11 +85,11 @@ namespace XUnityEngine.Joystick {
             string name = joystickNames[joystickIndex - 1];
             // Check if the joystick is inactive...
             if (name.Length == 0) {
-                print ("Inactive joystick detected at index " + joystickIndex + ". Ignoring.");
+                print ("Disconnected joystick detected at index " + joystickIndex + ". Ignoring.");
                 yield break;
             }
             Joystick dummyJoystick = new Joystick (joystickIndex, name);
-            print ("Attempting to bind joystick " + joystickIndex + ": " + name);
+            print ("Attempting to connect joystick " + joystickIndex + ": " + name);
             while (dummyJoystick.IsPolling)
                 yield return null;
             Joystick joystick = null;
@@ -110,7 +110,7 @@ namespace XUnityEngine.Joystick {
                     joystick = new PS4Joystick (joystickIndex, name, isWired);
                     break;
             }
-            print ("Successfully bound joystick " + joystickIndex + " of type " + joystick + " with config " + joystick.Config + '.');
+            print ("Successfully connected joystick " + joystickIndex + " of type " + joystick + " with config " + joystick.Config + '.');
             joysticks[readonlyJoyCount++] = joystick;
             if (OnRegister != null)
                 OnRegister (joystick);
@@ -141,7 +141,7 @@ namespace XUnityEngine.Joystick {
             return null;
         }
 
-        private void DisableJoystick (int joystickIndex) {
+        private void DisconnectJoystick (int joystickIndex) {
             Joystick joy = GetJoystickByID (joystickIndex);
             if (joy == null || !joy.IsConnected)
                 return;
@@ -151,11 +151,11 @@ namespace XUnityEngine.Joystick {
                 OnDisconnect (joy);
         }
 
-        private void EnableJoystick (int joystickIndex) {
+        private void ConnectJoystick (int joystickIndex) {
             Joystick joy = GetJoystickByID (joystickIndex);
             if (joy == null || joy.IsConnected)
                 return;
-            Debug.LogWarning ("Joystick " + joystickIndex + " has been reconnected!");
+            Debug.LogWarning ("Joystick " + joystickIndex + " has been connected!");
             joy.Activate ();
             if (OnConnect != null)
                 OnConnect (joy);
