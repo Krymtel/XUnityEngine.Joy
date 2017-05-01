@@ -37,7 +37,7 @@ namespace XUnityEngine.Joystick {
         private int joyNameCount = 0;
         private int prevJoyNameCount = 0;
 
-        private void Awake () {
+        private void Start () {
             joyNames = new string[MAX_JOYSTICKS];
             prevJoyNames = new string[MAX_JOYSTICKS];
             joysticks = new Joystick[MAX_JOYSTICKS];
@@ -88,17 +88,11 @@ namespace XUnityEngine.Joystick {
                 print ("Inactive joystick detected at index " + joystickIndex + ". Ignoring.");
                 yield break;
             }
-            Joystick joystick = null;
-            string joyID = "Joystick" + joystickIndex;
+            Joystick dummyJoystick = new Joystick (joystickIndex, name);
             print ("Attempting to bind joystick " + joystickIndex + ": " + name);
-            Func<bool> IsPollingForInput = delegate () {
-                bool isPolling = true;
-                int i = 0;
-                while ((isPolling = Input.GetAxisRaw (joyID + "Axis" + (++i)) == 0.0f) && i < Joystick.MAX_AXES);
-                return isPolling;
-            };
-            while (IsPollingForInput ())
+            while (dummyJoystick.IsPolling)
                 yield return null;
+            Joystick joystick = null;
             switch (name) {
                 // Assume that the default joystick is configured to work like an XBOX 360 controller.
                 default:
@@ -112,7 +106,7 @@ namespace XUnityEngine.Joystick {
                 // Would be nice if Unity gave me a better way to read into a joystick's info...
                 case "Wireless Controller":                                         // Standalone (Win)
                 case "054c-05c4-Wireless Controller":                               // WebGL
-                    bool isWired = Input.GetAxisRaw (joyID + "Axis2") != 0.0f; // Jank check to see if we're working with bluetooth (since, in that case, Axis2 should always return 0...)
+                    bool isWired = dummyJoystick.GetAxisRaw (2) != 0.0f; // Jank check to see if we're working with bluetooth (since, in that case, Axis2 should always return 0...)
                     joystick = new PS4Joystick (joystickIndex, name, isWired);
                     break;
             }
@@ -132,7 +126,7 @@ namespace XUnityEngine.Joystick {
             Joystick potential = null;
             while (joystick > 0 && i < readonlyJoyCount) {
                 potential = joysticks[i++];
-                if (potential.IsActive)
+                if (potential.IsConnected)
                     joystick--;
             }
             return joystick == 0 ? potential : null;
@@ -149,7 +143,7 @@ namespace XUnityEngine.Joystick {
 
         private void DisableJoystick (int joystickIndex) {
             Joystick joy = GetJoystickByID (joystickIndex);
-            if (joy == null || !joy.IsActive)
+            if (joy == null || !joy.IsConnected)
                 return;
             Debug.LogWarning ("Joystick " + joystickIndex + " has been disconnected!");
             joy.Deactivate ();
@@ -159,7 +153,7 @@ namespace XUnityEngine.Joystick {
 
         private void EnableJoystick (int joystickIndex) {
             Joystick joy = GetJoystickByID (joystickIndex);
-            if (joy == null || joy.IsActive)
+            if (joy == null || joy.IsConnected)
                 return;
             Debug.LogWarning ("Joystick " + joystickIndex + " has been reconnected!");
             joy.Activate ();
