@@ -46,7 +46,8 @@ namespace XUnityEngine.Joystick {
 
     public class PS4Joystick : Joystick {
 
-        public PS4Joystick (int index, string name, bool isWired) : base (index, name) {
+        public PS4Joystick (int index, string name) : base (index, name) {
+            bool isWired = GetAxisRaw (2) != 0.0f; // Jank check to see if we're working with bluetooth (since, in that case, Axis2 should always return 0...)
             LoadConfig (isWired ? ((JoystickConfig) new PS4JoystickConfig ()) : ((JoystickConfig) new PS4WirelessJoystickConfig ()));
         }
 

@@ -9,18 +9,16 @@ namespace XUnityEngine.Joystick {
      *
      * - WebGL: Figure out some way to recognize that a joystick is no longer connected so that we can stop reading in input (this is particular to XBOX it seems.)
      *          I think WebGL must use some other way to represent a DC'd controller besides an empty string.
-     *          
-     * - General: Handle the case that an amount of joysticks greater than MAX_JOYSTICKS is connected.
-     * 
+     *
      */
 
     public class JoystickManager : MonoBehaviour {
 
         public const int MAX_JOYSTICKS = 10;
 
-        public event Action<Joystick> OnRegister;
-        public event Action<Joystick> OnConnect;
-        public event Action<Joystick> OnDisconnect;
+        public event Action<Joystick> OnRegister;       // Upon connecting a joystick for the first time...
+        public event Action<Joystick> OnConnect;        // Upon connecting a joystick...
+        public event Action<Joystick> OnDisconnect;     // Upon disconnecting a joystick...
 
         public int JoystickCount {
             get {
@@ -38,20 +36,19 @@ namespace XUnityEngine.Joystick {
         private int prevJoyNameCount = 0;
 
         private void Start () {
+            joysticks = new Joystick[MAX_JOYSTICKS];
             joyNames = new string[MAX_JOYSTICKS];
             prevJoyNames = new string[MAX_JOYSTICKS];
-            joysticks = new Joystick[MAX_JOYSTICKS];
-            PollForJoysticks ();
+            PollJoystickNames ();
+            CacheJoyNames ();
             print ("Detected " + joyNameCount + " joystick" + (joyNameCount == 1 ? "." : "s."));
-            for (int i = 0; i < Mathf.Min (joyNameCount, MAX_JOYSTICKS); i++)
+            for (int i = 0; i < joyNameCount; i++)
                 StartCoroutine (AddJoystick (joyNames, i + 1));
-            joyNames.CopyTo (prevJoyNames, 0);
-            prevJoyNameCount = joyNameCount;
         }
 
         private void Update () {
-            PollForJoysticks ();
-            for (int i = 0; i < Mathf.Min (prevJoyNameCount, joyNameCount); i++) {
+            PollJoystickNames ();
+            for (int i = 0; i < prevJoyNameCount; i++) {
                 if (prevJoyNames[i].Length == 0 && joyNames[i].Length > 0)
                     StartCoroutine (AddJoystick (joyNames, i + 1));
             }
@@ -67,17 +64,26 @@ namespace XUnityEngine.Joystick {
                 else
                     ConnectJoystick  (i + 1);
             }
+            CacheJoyNames ();
+        }
+
+        private void PollJoystickNames () {
+            string[] newJoyNames = Input.GetJoystickNames ();
+            int newJoyCount = Mathf.Min (newJoyNames.Length, MAX_JOYSTICKS);
+            Array.Copy (newJoyNames, joyNames, newJoyCount);
+            joyNameCount = newJoyCount;
+        }
+
+        private void CacheJoyNames () {
             joyNames.CopyTo (prevJoyNames, 0);
             prevJoyNameCount = joyNameCount;
         }
 
-        private void PollForJoysticks () {
-            string[] newJoyNames = Input.GetJoystickNames ();
-            newJoyNames.CopyTo (joyNames, 0);
-            joyNameCount = newJoyNames.Length;
-        }
-
         private IEnumerator AddJoystick (string[] joystickNames, int joystickIndex) {
+            if (readonlyJoyCount >= MAX_JOYSTICKS) {
+                Debug.LogWarning ("You're trying to connect more joysticks than supported!");
+                yield break;
+            }
             if (GetJoystickByID (joystickIndex) != null) {
                 Debug.LogWarning ("Tried adding a joystick where there was one already!");
                 yield break;
@@ -90,11 +96,12 @@ namespace XUnityEngine.Joystick {
             }
             Joystick dummyJoystick = new Joystick (joystickIndex, name);
             print ("Attempting to connect joystick " + joystickIndex + ": " + name);
-            while (dummyJoystick.IsPolling)
+            // Wait until we're getting some kind of input from the joystick.
+            while (dummyJoystick.IsNeutral)
                 yield return null;
             Joystick joystick = null;
             switch (name) {
-                // Assume that the default joystick is configured to work like an XBOX 360 controller.
+                // Treat the default joystick as an XBOX 360 controller. This includes XBOX ONE controllers for now.
                 default:
                     // case "Controller (Xbox One For Windows)":                    // Standalone (Win)
                     // case "Controller (XBOX 360 For Windows)":                    // Standalone (Win)
@@ -106,8 +113,7 @@ namespace XUnityEngine.Joystick {
                 // Would be nice if Unity gave me a better way to read into a joystick's info...
                 case "Wireless Controller":                                         // Standalone (Win)
                 case "054c-05c4-Wireless Controller":                               // WebGL
-                    bool isWired = dummyJoystick.GetAxisRaw (2) != 0.0f; // Jank check to see if we're working with bluetooth (since, in that case, Axis2 should always return 0...)
-                    joystick = new PS4Joystick (joystickIndex, name, isWired);
+                    joystick = new PS4Joystick (joystickIndex, name);
                     break;
             }
             print ("Successfully connected joystick " + joystickIndex + " of type " + joystick + " with config " + joystick.Config + '.');

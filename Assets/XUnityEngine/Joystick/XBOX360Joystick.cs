@@ -44,14 +44,6 @@ namespace XUnityEngine.Joystick {
             return -base.GetRSY ();
         }
 
-        /*protected override float GetLT () {
-            return Mathf.Max (0, base.GetLT ());
-        }
-
-        protected override float GetRT () {
-            return Mathf.Max (0, -base.GetRT ());
-        }*/
-
     }
 
 

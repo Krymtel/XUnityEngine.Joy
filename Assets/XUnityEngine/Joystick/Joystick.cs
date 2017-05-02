@@ -33,8 +33,9 @@ namespace XUnityEngine.Joystick {
 
     public class Joystick {
 
-        public const int MAX_BUTTONS = 20;
-        public const int MAX_AXES = 27;
+        public const int    MAX_BUTTONS = 20;
+        public const int    MAX_AXES    = 27;
+        public const float  DEADZONE    = 1.0f / 8.0f;
 
         public string Name {
             get {
@@ -54,7 +55,7 @@ namespace XUnityEngine.Joystick {
             }
         }
 
-        public bool IsPolling {
+        public bool IsNeutral {
             get {
                 bool noInput = true;
                 int i;
@@ -80,8 +81,6 @@ namespace XUnityEngine.Joystick {
         private bool            readonlyIsConnected;
         private string[]        axes;
 
-        public const float DEADZONE = 1.0f / 8.0f;
-
         public Joystick (int index, string name) {
             string axisBase = "Joystick" + index + "Axis";
             readonlyIndex = index;
@@ -98,7 +97,10 @@ namespace XUnityEngine.Joystick {
         }
 
         private KeyCode GlobalizeButton (int buttonID) {
-            return (KeyCode) ((int) KeyCode.Joystick1Button0 + (Index - 1) * MAX_BUTTONS + Mathf.Clamp (buttonID, 0, MAX_BUTTONS - 1));
+            if (buttonID >= 0 && buttonID < MAX_BUTTONS)
+                return (KeyCode) ((int) KeyCode.Joystick1Button0 + (Index - 1) * MAX_BUTTONS + buttonID);
+            else
+                return KeyCode.None;
         }
 
         private string GlobalizeAxis (int axisID) {

@@ -15,12 +15,11 @@ public class JoystickTester : MonoBehaviour {
     private Vector3 velocity;
     private Vector3 rotation;
 
-
     private void Awake () {
         joy = GetComponent<JoystickListener> ();
         sprite = transform.Find ("Sprite").GetComponent<SpriteRenderer> ();
         sprite.color = color;
-        sprite.sortingOrder = (int) ((1.0f / (float) joy.playerID) * 100.0f);
+        sprite.sortingOrder = JoystickManager.MAX_JOYSTICKS - joy.playerID;
     }
 
     private void Update () {
@@ -31,12 +30,8 @@ public class JoystickTester : MonoBehaviour {
         rotation.x = joy.GetAxis (JoystickAxis.RSX);
         rotation.y = joy.GetAxis (JoystickAxis.RSY);
         transform.position += velocity * (speed + speed * joy.GetAxis (JoystickAxis.RT)) * Time.deltaTime;
-        if (rotation.magnitude >= Joystick.DEADZONE)
+        if (rotation.magnitude > Joystick.DEADZONE)
             transform.rotation = Quaternion.AngleAxis (Mathf.Atan2 (rotation.y, rotation.x) * Mathf.Rad2Deg, Vector3.forward);
-    }
-
-    public void Cry () {
-        print ("ree");
     }
 
 }
