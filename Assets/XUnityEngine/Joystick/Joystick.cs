@@ -54,7 +54,7 @@ namespace XUnityEngine.Joystick {
             }
         }
 
-        public bool IsPolling {
+        public bool IsNeutral {
             get {
                 bool noInput = true;
                 int i;

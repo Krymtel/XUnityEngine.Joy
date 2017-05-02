@@ -48,7 +48,7 @@ namespace XUnityEngine.Joystick {
 
         private void Update () {
             PollJoystickNames ();
-            for (int i = 0; i < Mathf.Min (prevJoyNameCount, joyNameCount); i++) {
+            for (int i = 0; i < prevJoyNameCount; i++) {
                 if (prevJoyNames[i].Length == 0 && joyNames[i].Length > 0)
                     StartCoroutine (AddJoystick (joyNames, i + 1));
             }
@@ -67,11 +67,6 @@ namespace XUnityEngine.Joystick {
             CacheJoyNames ();
         }
 
-        private void CacheJoyNames () {
-            joyNames.CopyTo (prevJoyNames, 0);
-            prevJoyNameCount = joyNameCount;
-        }
-
         private void PollJoystickNames () {
             string[] newJoyNames = Input.GetJoystickNames ();
             int newJoyCount = Mathf.Min (newJoyNames.Length, MAX_JOYSTICKS);
@@ -79,7 +74,16 @@ namespace XUnityEngine.Joystick {
             joyNameCount = newJoyCount;
         }
 
+        private void CacheJoyNames () {
+            joyNames.CopyTo (prevJoyNames, 0);
+            prevJoyNameCount = joyNameCount;
+        }
+
         private IEnumerator AddJoystick (string[] joystickNames, int joystickIndex) {
+            if (readonlyJoyCount >= MAX_JOYSTICKS) {
+                Debug.LogWarning ("You're trying to connect more joysticks than supported!");
+                yield break;
+            }
             if (GetJoystickByID (joystickIndex) != null) {
                 Debug.LogWarning ("Tried adding a joystick where there was one already!");
                 yield break;
@@ -92,11 +96,12 @@ namespace XUnityEngine.Joystick {
             }
             Joystick dummyJoystick = new Joystick (joystickIndex, name);
             print ("Attempting to connect joystick " + joystickIndex + ": " + name);
-            while (dummyJoystick.IsPolling)
+            // Wait until we're getting some kind of input from the joystick.
+            while (dummyJoystick.IsNeutral)
                 yield return null;
             Joystick joystick = null;
             switch (name) {
-                // Assume that the default joystick is configured to work like an XBOX 360 controller.
+                // Treat the default joystick as an XBOX 360 controller. This includes XBOX ONE controllers for now.
                 default:
                     // case "Controller (Xbox One For Windows)":                    // Standalone (Win)
                     // case "Controller (XBOX 360 For Windows)":                    // Standalone (Win)
