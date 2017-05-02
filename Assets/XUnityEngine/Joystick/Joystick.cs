@@ -6,6 +6,12 @@ using System.Text;
 
 namespace XUnityEngine.Joystick {
 
+    /* TODO
+     *
+     * - Find a way to release a joystick's button upon disconnect.
+     *
+     */
+
     public enum JoystickButton {
         B1,
         B2,

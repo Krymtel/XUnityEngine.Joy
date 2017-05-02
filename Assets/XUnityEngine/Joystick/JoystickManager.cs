@@ -7,8 +7,8 @@ namespace XUnityEngine.Joystick {
 
     /* TODO
      *
-     * - WebGL: Figure out some way to recognize that a joystick is no longer connected so that we can stop reading in input (this is particular to XBOX it seems.)
-     *          I think WebGL must use some other way to represent a DC'd controller besides an empty string.
+     * - Implement a way to get a joystick by some criteria besides first-come-first-serve?
+     *      (e.g. instead of getting the second available joystick in the array, get the first-most-recently connected joystick...)
      *
      */
 
