@@ -9,9 +9,7 @@ namespace XUnityEngine.Joystick {
      *
      * - WebGL: Figure out some way to recognize that a joystick is no longer connected so that we can stop reading in input (this is particular to XBOX it seems.)
      *          I think WebGL must use some other way to represent a DC'd controller besides an empty string.
-     *          
-     * - General: Handle the case that an amount of joysticks greater than MAX_JOYSTICKS is connected.
-     * 
+     *
      */
 
     public class JoystickManager : MonoBehaviour {
@@ -41,15 +39,15 @@ namespace XUnityEngine.Joystick {
             joyNames = new string[MAX_JOYSTICKS];
             prevJoyNames = new string[MAX_JOYSTICKS];
             joysticks = new Joystick[MAX_JOYSTICKS];
-            PollForJoysticks ();
-            print ("Detected " + joyNameCount + " joystick" + (joyNameCount == 1 ? "." : "s."));
-            for (int i = 0; i < Mathf.Min (joyNameCount, MAX_JOYSTICKS); i++)
-                StartCoroutine (AddJoystick (joyNames, i + 1));
+            PollJoystickNames ();
             CacheJoyNames ();
+            print ("Detected " + joyNameCount + " joystick" + (joyNameCount == 1 ? "." : "s."));
+            for (int i = 0; i < joyNameCount; i++)
+                StartCoroutine (AddJoystick (joyNames, i + 1));
         }
 
         private void Update () {
-            PollForJoysticks ();
+            PollJoystickNames ();
             for (int i = 0; i < Mathf.Min (prevJoyNameCount, joyNameCount); i++) {
                 if (prevJoyNames[i].Length == 0 && joyNames[i].Length > 0)
                     StartCoroutine (AddJoystick (joyNames, i + 1));
@@ -74,10 +72,11 @@ namespace XUnityEngine.Joystick {
             prevJoyNameCount = joyNameCount;
         }
 
-        private void PollForJoysticks () {
+        private void PollJoystickNames () {
             string[] newJoyNames = Input.GetJoystickNames ();
-            newJoyNames.CopyTo (joyNames, 0);
-            joyNameCount = newJoyNames.Length;
+            int newJoyCount = Mathf.Min (newJoyNames.Length, MAX_JOYSTICKS);
+            Array.Copy (newJoyNames, joyNames, newJoyCount);
+            joyNameCount = newJoyCount;
         }
 
         private IEnumerator AddJoystick (string[] joystickNames, int joystickIndex) {
