@@ -33,8 +33,9 @@ namespace XUnityEngine.Joystick {
 
     public class Joystick {
 
-        public const int MAX_BUTTONS = 20;
-        public const int MAX_AXES = 27;
+        public const int    MAX_BUTTONS = 20;
+        public const int    MAX_AXES    = 27;
+        public const float  DEADZONE    = 1.0f / 8.0f;
 
         public string Name {
             get {
@@ -79,8 +80,6 @@ namespace XUnityEngine.Joystick {
         private JoystickConfig  readonlyConfig;
         private bool            readonlyIsConnected;
         private string[]        axes;
-
-        public const float DEADZONE = 1.0f / 8.0f;
 
         public Joystick (int index, string name) {
             string axisBase = "Joystick" + index + "Axis";
