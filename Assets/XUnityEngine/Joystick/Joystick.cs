@@ -59,10 +59,10 @@ namespace XUnityEngine.Joystick {
                 bool noInput = true;
                 int i;
                 i = 0;
-                while (noInput &= !GetButton (i++) && i < Joystick.MAX_BUTTONS) ;
+                while ((noInput &= !GetButton (i++)) && i < Joystick.MAX_BUTTONS) ;
                 if (noInput) {
                     i = 1;
-                    while (noInput &= GetAxisRaw (i++) == 0.0f && i <= Joystick.MAX_AXES) ;
+                    while ((noInput &= GetAxisRaw (i++) == 0.0f) && i <= Joystick.MAX_AXES) ;
                 }
                 return noInput;
             }
