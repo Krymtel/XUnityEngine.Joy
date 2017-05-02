@@ -98,7 +98,10 @@ namespace XUnityEngine.Joystick {
         }
 
         private KeyCode GlobalizeButton (int buttonID) {
-            return (KeyCode) ((int) KeyCode.Joystick1Button0 + (Index - 1) * MAX_BUTTONS + Mathf.Clamp (buttonID, 0, MAX_BUTTONS - 1));
+            if (buttonID >= 0 && buttonID < MAX_BUTTONS)
+                return (KeyCode) ((int) KeyCode.Joystick1Button0 + (Index - 1) * MAX_BUTTONS + buttonID);
+            else
+                return KeyCode.None;
         }
 
         private string GlobalizeAxis (int axisID) {
