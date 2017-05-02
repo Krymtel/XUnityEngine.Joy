@@ -45,8 +45,7 @@ namespace XUnityEngine.Joystick {
             print ("Detected " + joyNameCount + " joystick" + (joyNameCount == 1 ? "." : "s."));
             for (int i = 0; i < Mathf.Min (joyNameCount, MAX_JOYSTICKS); i++)
                 StartCoroutine (AddJoystick (joyNames, i + 1));
-            joyNames.CopyTo (prevJoyNames, 0);
-            prevJoyNameCount = joyNameCount;
+            CacheJoyNames ();
         }
 
         private void Update () {
@@ -67,6 +66,10 @@ namespace XUnityEngine.Joystick {
                 else
                     ConnectJoystick  (i + 1);
             }
+            CacheJoyNames ();
+        }
+
+        private void CacheJoyNames () {
             joyNames.CopyTo (prevJoyNames, 0);
             prevJoyNameCount = joyNameCount;
         }
