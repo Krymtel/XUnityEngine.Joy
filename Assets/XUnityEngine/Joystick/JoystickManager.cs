@@ -113,8 +113,7 @@ namespace XUnityEngine.Joystick {
                 // Would be nice if Unity gave me a better way to read into a joystick's info...
                 case "Wireless Controller":                                         // Standalone (Win)
                 case "054c-05c4-Wireless Controller":                               // WebGL
-                    bool isWired = dummyJoystick.GetAxisRaw (2) != 0.0f; // Jank check to see if we're working with bluetooth (since, in that case, Axis2 should always return 0...)
-                    joystick = new PS4Joystick (joystickIndex, name, isWired);
+                    joystick = new PS4Joystick (joystickIndex, name);
                     break;
             }
             print ("Successfully connected joystick " + joystickIndex + " of type " + joystick + " with config " + joystick.Config + '.');
