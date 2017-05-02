@@ -18,9 +18,9 @@ namespace XUnityEngine.Joystick {
 
         public const int MAX_JOYSTICKS = 10;
 
-        public event Action<Joystick> OnRegister;
-        public event Action<Joystick> OnConnect;
-        public event Action<Joystick> OnDisconnect;
+        public event Action<Joystick> OnRegister;       // Upon connecting a joystick for the first time...
+        public event Action<Joystick> OnConnect;        // Upon connecting a joystick...
+        public event Action<Joystick> OnDisconnect;     // Upon disconnecting a joystick...
 
         public int JoystickCount {
             get {
