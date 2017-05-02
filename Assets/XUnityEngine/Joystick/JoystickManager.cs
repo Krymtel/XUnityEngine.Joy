@@ -36,9 +36,9 @@ namespace XUnityEngine.Joystick {
         private int prevJoyNameCount = 0;
 
         private void Start () {
+            joysticks = new Joystick[MAX_JOYSTICKS];
             joyNames = new string[MAX_JOYSTICKS];
             prevJoyNames = new string[MAX_JOYSTICKS];
-            joysticks = new Joystick[MAX_JOYSTICKS];
             PollJoystickNames ();
             CacheJoyNames ();
             print ("Detected " + joyNameCount + " joystick" + (joyNameCount == 1 ? "." : "s."));
