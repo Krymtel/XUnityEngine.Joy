@@ -139,7 +139,7 @@ namespace XUnityEngine.Joystick {
                     return GlobalizeButton (readonlyConfig.RS);
             }
             Debug.LogError ("How did you manage to print this?");
-            return 0;
+            return KeyCode.None;
         }
 
         public bool GetButton       (JoystickButton button) {
