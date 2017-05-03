@@ -280,11 +280,11 @@ namespace XUnityEngine.Joystick {
             return Input.GetAxisRaw (GlobalizeAxis (readonlyConfig.RT));
         }
 
-        public void Activate () {
+        public void Connect () {
             readonlyIsConnected = true;
         }
 
-        public void Deactivate () {
+        public void Disconnect () {
             readonlyIsConnected = false;
         }
 

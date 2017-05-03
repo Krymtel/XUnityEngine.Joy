@@ -145,7 +145,7 @@ namespace XUnityEngine.Joystick {
             if (joy == null || !joy.IsConnected)
                 return;
             Debug.LogWarning ("Joystick " + joystickIndex + " has been disconnected!");
-            joy.Deactivate ();
+            joy.Disconnect ();
             if (OnDisconnect != null)
                 OnDisconnect (joy);
         }
@@ -155,7 +155,7 @@ namespace XUnityEngine.Joystick {
             if (joy == null || joy.IsConnected)
                 return;
             Debug.LogWarning ("Joystick " + joystickIndex + " has been connected!");
-            joy.Activate ();
+            joy.Connect ();
             if (OnConnect != null)
                 OnConnect (joy);
         }
