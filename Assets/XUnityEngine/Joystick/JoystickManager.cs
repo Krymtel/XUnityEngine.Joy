@@ -5,13 +5,6 @@ using System;
 
 namespace XUnityEngine.Joystick {
 
-    /* TODO
-     *
-     * - Implement a way to get a joystick by some criteria besides first-come-first-serve?
-     *      (e.g. instead of getting the second available joystick in the array, get the first-most-recently connected joystick...)
-     *
-     */
-
     public class JoystickManager : MonoBehaviour {
 
         public const int MAX_JOYSTICKS = 10;
